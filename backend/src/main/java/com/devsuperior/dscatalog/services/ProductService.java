@@ -1,5 +1,7 @@
 package com.devsuperior.dscatalog.services;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.EntityNotFoundException;
@@ -31,17 +33,18 @@ public class ProductService {
 	private CategoryRepository categoryRepository;
 
 	@Transactional(readOnly = true)
-	public Page<ProductDTO> findAllPaged(Pageable pageable) {
-		Page<Product> list = repository.findAll(pageable);
-		return list.map(x -> new ProductDTO(x));
-
+	public Page<ProductDTO> findAllPaged(Long categoryId, String name, Pageable pageable) {
+		List<Category> categories = (categoryId == 0) ? null : Arrays.asList(categoryRepository.getOne(categoryId));
+		Page<Product> page = repository.find(categories, name, pageable);
+		repository.findProductsWithCategories(page.getContent());
+		return page.map(x -> new ProductDTO(x, x.getCategories()));
 	}
 
 	@Transactional(readOnly = true)
 	public ProductDTO findById(Long id) {
 		Optional<Product> obj = repository.findById(id);
 		Product entity = obj.orElseThrow(() -> new ResourceNotFoundException("Entity not found"));
-		return new ProductDTO(entity, entity.getCategoties());
+		return new ProductDTO(entity, entity.getCategories());
 	}
 
 	@Transactional
@@ -74,8 +77,7 @@ public class ProductService {
 		}
 		catch (DataIntegrityViolationException e) {
 			throw new DatabaseException("Integrity violation");
-		}
-		
+		}	
 	}
 	
 	private void copyDtoToEntity(ProductDTO dto, Product entity) {
@@ -86,10 +88,10 @@ public class ProductService {
 		entity.setImgUrl(dto.getImgUrl());
 		entity.setPrice(dto.getPrice());
 		
-		entity.getCategoties().clear();
+		entity.getCategories().clear();
 		for(CategoryDTO catDto : dto.getCategories()) {
 			Category category = categoryRepository.getOne(catDto.getId());
-			entity.getCategoties().add(category);
+			entity.getCategories().add(category);
 		}
 	}
 
