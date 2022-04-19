@@ -20,7 +20,7 @@ import com.devsuperior.dscatalog.components.JwtTokenEnhancer;
 
 @Configuration
 @EnableAuthorizationServer
-public class AuthorizationServerConfig  extends AuthorizationServerConfigurerAdapter{
+public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
 
 	@Value("${security.oauth2.client.client-id}")
 	private String clientId;
@@ -72,6 +72,4 @@ public class AuthorizationServerConfig  extends AuthorizationServerConfigurerAda
 		.accessTokenConverter(accessTokenConverter)
 		.tokenEnhancer(chain);
 	}
-
-	
 }

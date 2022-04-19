@@ -30,19 +30,19 @@ import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 
 @Service
-public class UserService implements UserDetailsService{
+public class UserService implements UserDetailsService {
 	
 	private static Logger logger = LoggerFactory.getLogger(UserService.class);
 	
 	@Autowired
 	private BCryptPasswordEncoder passwordEncoder;
-
+	
 	@Autowired
 	private UserRepository repository;
 	
 	@Autowired
 	private RoleRepository roleRepository;
-
+	
 	@Transactional(readOnly = true)
 	public Page<UserDTO> findAllPaged(Pageable pageable) {
 		Page<User> list = repository.findAll(pageable);
@@ -74,8 +74,8 @@ public class UserService implements UserDetailsService{
 			return new UserDTO(entity);
 		}
 		catch (EntityNotFoundException e) {
-			throw new ResourceNotFoundException("Id not found " + id); 
-		}
+			throw new ResourceNotFoundException("Id not found " + id);
+		}		
 	}
 
 	public void delete(Long id) {
@@ -88,17 +88,16 @@ public class UserService implements UserDetailsService{
 		catch (DataIntegrityViolationException e) {
 			throw new DatabaseException("Integrity violation");
 		}
-		
 	}
 	
 	private void copyDtoToEntity(UserDTO dto, User entity) {
-		
+
 		entity.setFirstName(dto.getFirstName());
 		entity.setLastName(dto.getLastName());
 		entity.setEmail(dto.getEmail());
 		
 		entity.getRoles().clear();
-		for(RoleDTO roleDto : dto.getRoles()) {
+		for (RoleDTO roleDto : dto.getRoles()) {
 			Role role = roleRepository.getOne(roleDto.getId());
 			entity.getRoles().add(role);
 		}
@@ -108,12 +107,11 @@ public class UserService implements UserDetailsService{
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		
 		User user = repository.findByEmail(username);
-		if(user == null) {
+		if (user == null) {
 			logger.error("User not found: " + username);
 			throw new UsernameNotFoundException("Email not found");
 		}
 		logger.info("User found: " + username);
 		return user;
 	}
-
 }
